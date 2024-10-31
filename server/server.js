@@ -1,11 +1,12 @@
+require('dotenv').config();
+
 const express = require('express');
 const app = express();
-const port = 8080;
+const port = process.env.PORT || 3000; // Use environment variable or fallback to 3000
 const cors = require('cors');
 
-
 const corsOptions = {
-    origin: 'http://localhost:5173'
+    origin: process.env.ORIGIN || 'http://localhost:5173'
 };
 
 app.use(cors(corsOptions));
