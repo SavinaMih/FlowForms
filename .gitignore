@@ -25,6 +25,7 @@ dist-ssr
 
 # Webstrom directories and files
 .idea/*
+.idea
 
 # .env files
 .env.local
