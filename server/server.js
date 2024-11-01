@@ -5,9 +5,13 @@ const passport = require('./config/passport');
 const cors = require('cors');
 const { swaggerUi, specs } = require('./swagger');
 const loadRoutes = require('./routes/index');
-
+const path = require('path');
 const app = express();
 const port = process.env.PORT || 5000;
+
+// Set EJS as the view engine
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 
 // CORS options
 const corsOptions = {

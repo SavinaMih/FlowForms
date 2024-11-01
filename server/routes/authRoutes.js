@@ -1,55 +1,77 @@
 const express = require('express');
-const passport = require('../config/passport'); // Path to your passport configuration
-
 const router = express.Router();
+const passport = require('passport');
+const bcrypt = require('bcrypt');
+const UserService = require('../services/UserService'); // Adjust path if needed
 
-// Google OAuth authentication
-router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+// Render login page with Google as a provider
+router.get('/login', (req, res) => {
+    res.render('login', { providers: ['google'] });
+});
 
-// Google OAuth callback
-router.get(
-    '/google/callback',
-    passport.authenticate('google', { failureRedirect: '/login' }),
-    (req, res) => {
-        // Successful authentication, redirect or respond as desired
-        res.redirect('/');
-    }
-);
+// Local login route
+router.post('/login', passport.authenticate('local', {
+    successRedirect: '/',
+    failureRedirect: '/auth/login',
+    failureFlash: true
+}));
 
-// Local signup
-router.post('/signup', async (req, res, next) => {
-    const { name, email, password } = req.body;
+// Render signup page with Google as a provider
+router.get('/signup', (req, res) => {
+    res.render('signup', { providers: ['google'] });
+});
+
+// Signup route with duplicate check
+router.post('/signup', async (req, res) => {
     try {
-        // Check if user already exists
-        let user = await User.findOne({ where: { email } });
-        if (user) {
-            return res.status(400).json({ message: 'User already exists' });
+        const { name, email, password } = req.body;
+
+        // Check if a user with the given email already exists
+        const existingUser = await UserService.findUserByEmail(email);
+        if (existingUser) {
+            req.flash('error', 'A user with this email already exists.');
+            return res.redirect('/auth/signup');
         }
 
-        // Hash password
+        // Hash the password
         const hashedPassword = await bcrypt.hash(password, 10);
-        user = await User.create({ name, email, password: hashedPassword });
 
-        // Log in the user
-        req.login(user, (err) => {
-            if (err) return next(err);
-            res.status(201).json({ message: 'User created successfully', user });
+        // Create the new user
+        await UserService.createUser({
+            name,
+            email,
+            password: hashedPassword
         });
+
+        res.redirect('/auth/login');
     } catch (error) {
-        res.status(500).json({ error: 'Failed to create user' });
+        console.error('Error during signup:', error);
+        res.redirect('/auth/signup');
     }
 });
 
-// Local login
-router.post(
-    '/login',
-    passport.authenticate('local', {
-        successRedirect: '/',
-        failureRedirect: '/login',
-        failureFlash: true,
-    })
-);
+// Google authentication route
+router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+// Google callback route with duplicate check
+router.get('/google/callback', async (req, res, next) => {
+    passport.authenticate('google', async (err, user, info) => {
+        if (err) return next(err);
+        if (!user) return res.redirect('/auth/login');
+
+        // Check if a user with the same email already exists
+        const existingUser = await UserService.findUserByEmail(user.email);
+        if (existingUser && !existingUser.googleId) {
+            req.flash('error', 'This email is already associated with another account.');
+            return res.redirect('/auth/login');
+        }
+
+        // If user is new, proceed with authentication
+        req.login(user, (err) => {
+            if (err) return next(err);
+            res.redirect('/');
+        });
+    })(req, res, next);
+});
 
 module.exports = router;
-
-

@@ -8,63 +8,54 @@ generator client {
 }
 
 model User {
-  id       Int    @id @default(autoincrement())
-  name     String
-  email    String @unique
-  password String
-  role     Role   @default(USER)
+  id                  Int            @id @default(autoincrement())
+  name                String
+  email               String         @unique
+  password            String?
+  googleId            String?        @unique // Optional, unique ID for Google-authenticated users
+  role                Role           @default(USER)
+  organization        Organization?  @relation("UserOrganization", fields: [organizationId], references: [id])
+  organizationId      Int?
+  managedBy           User?          @relation("UserManager", fields: [managedById], references: [id])
+  managedById         Int?
+  managedUsers        User[]         @relation("UserManager")
+  projects            Project[]      @relation("ProjectUsers")
+  managedProjects     Project[]      @relation("ProjectManager") // User as project manager
+  Organization        Organization[]
+  managedOrganization Organization?  @relation("OrganizationManager")
 
-  // Relations
-  organization   Organization? @relation("UserOrganization", fields: [organizationId], references: [id])
-  organizationId Int?
-
-  managedBy    User?  @relation("UserManager", fields: [managedById], references: [id])
-  managedById  Int?
-  managedUsers User[] @relation("UserManager")
-
-  projects        Project[] @relation("ProjectUsers") // Projects as team member
-  managedProjects Project[] @relation("ProjectManager") // Projects as manager
-
-  // Manages the organization (optional for clarity)
-  managedOrganization Organization? @relation("OrganizationManager")
+  @@index([googleId])
 }
 
 model Organization {
-  id   Int    @id @default(autoincrement())
-  name String @unique
-
-  // Relations
-  manager          User?  @relation("OrganizationManager", fields: [primaryManagerId], references: [id])
-  primaryManagerId Int?   @unique
-  users            User[] @relation("UserOrganization")
-
-  projects Project[] // Projects belonging to the organization
+  id               Int       @id @default(autoincrement())
+  name             String    @unique
+  manager          User?     @relation("OrganizationManager", fields: [primaryManagerId], references: [id])
+  primaryManagerId Int?      @unique
+  users            User[]    @relation("UserOrganization")
+  projects         Project[]
+  User             User?     @relation(fields: [userId], references: [id])
+  userId           Int?
 }
 
 model Project {
-  id          Int     @id @default(autoincrement())
-  name        String
-  description String?
-
-  // Relations
+  id             Int          @id @default(autoincrement())
+  name           String
+  description    String?
   organization   Organization @relation(fields: [organizationId], references: [id])
   organizationId Int
-
-  manager   User? @relation("ProjectManager", fields: [managerId], references: [id]) // Project manager
-  managerId Int?
-
-  users User[] @relation("ProjectUsers") // Project team members
-  forms Form[] // Forms within the project
+  manager        User?        @relation("ProjectManager", fields: [managerId], references: [id]) // Project manager
+  managerId      Int?
+  users          User[]       @relation("ProjectUsers") // Project team members
+  forms          Form[]
 }
 
 model Form {
   id          Int     @id @default(autoincrement())
   name        String
   description String?
-
-  // Relation
-  project   Project @relation(fields: [projectId], references: [id])
-  projectId Int
+  project     Project @relation(fields: [projectId], references: [id])
+  projectId   Int
 }
 
 enum Role {

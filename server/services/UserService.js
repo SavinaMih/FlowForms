@@ -1,4 +1,3 @@
-// services/UserService.js
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
@@ -10,11 +9,13 @@ class UserService {
                 data: {
                     name: userData.name,
                     email: userData.email,
-                    password: userData.password, // Consider hashing the password before storing
+                    password: userData.password, // Password should be hashed before storing
+                    googleId: userData.googleId || null, // Optional Google ID
                 },
             });
             return user;
         } catch (error) {
+            // Handle unique constraint error on email field
             if (error.code === 'P2002' && error.meta && error.meta.target.includes('email')) {
                 console.error('Email already exists.');
                 throw new Error('Email already exists.');
@@ -22,6 +23,19 @@ class UserService {
                 console.error('Error creating user:', error);
                 throw error;
             }
+        }
+    }
+
+    // Find a user by email
+    static async findUserByEmail(email) {
+        try {
+            const user = await prisma.user.findUnique({
+                where: { email },
+            });
+            return user;
+        } catch (error) {
+            console.error('Error fetching user by email:', error);
+            throw error;
         }
     }
 
@@ -78,4 +92,5 @@ class UserService {
 }
 
 module.exports = UserService;
+
 
