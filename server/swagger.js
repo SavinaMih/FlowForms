@@ -9,8 +9,13 @@ const options = {
             version: '1.0.0',
             description: 'API documentation for FlowForm backend',
         },
+        servers: [
+            {
+                url: process.env.CLIENT_ORIGIN || 'http://localhost:8080',
+                description: 'Local server',
+            },
+        ],
     },
-    // Path to the API docs
     apis: ['./routes/*.js'],
 };
 
