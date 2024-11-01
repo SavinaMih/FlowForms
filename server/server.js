@@ -5,7 +5,6 @@ const passport = require('./config/passport');
 const cors = require('cors');
 const { swaggerUi, specs } = require('./swagger');
 const loadRoutes = require('./routes/index');
-const sequelize = require('./config/db'); // Import Sequelize instance
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -45,9 +44,6 @@ loadRoutes(app); // Load main routes
 // Test database connection on startup
 async function startServer() {
     try {
-        await sequelize.authenticate(); // Test connection to the database
-        console.log('Connection to the database has been established successfully.');
-
         // Start the server if DB connection is successful
         app.listen(port, () => {
             console.log(`Server is running on http://localhost:${port}`);

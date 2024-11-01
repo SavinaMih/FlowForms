@@ -1,0 +1,13 @@
+{
+  "lastRun": "20241101163536-add-organizationId-and-managedBy-to-users.js",
+  "migrations": [
+    {
+      "title": "20241101163533-add-organizationId-and-managedBy-to-users.js",
+      "timestamp": 1730481126769
+    },
+    {
+      "title": "20241101163536-add-organizationId-and-managedBy-to-users.js",
+      "timestamp": 1730481126773
+    }
+  ]
+}

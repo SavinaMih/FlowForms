@@ -1,0 +1,74 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  name     String
+  email    String @unique
+  password String
+  role     Role   @default(USER)
+
+  // Relations
+  organization   Organization? @relation("UserOrganization", fields: [organizationId], references: [id])
+  organizationId Int?
+
+  managedBy    User?  @relation("UserManager", fields: [managedById], references: [id])
+  managedById  Int?
+  managedUsers User[] @relation("UserManager")
+
+  projects        Project[] @relation("ProjectUsers") // Projects as team member
+  managedProjects Project[] @relation("ProjectManager") // Projects as manager
+
+  // Manages the organization (optional for clarity)
+  managedOrganization Organization? @relation("OrganizationManager")
+}
+
+model Organization {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  // Relations
+  manager          User?  @relation("OrganizationManager", fields: [primaryManagerId], references: [id])
+  primaryManagerId Int?   @unique
+  users            User[] @relation("UserOrganization")
+
+  projects Project[] // Projects belonging to the organization
+}
+
+model Project {
+  id          Int     @id @default(autoincrement())
+  name        String
+  description String?
+
+  // Relations
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId Int
+
+  manager   User? @relation("ProjectManager", fields: [managerId], references: [id]) // Project manager
+  managerId Int?
+
+  users User[] @relation("ProjectUsers") // Project team members
+  forms Form[] // Forms within the project
+}
+
+model Form {
+  id          Int     @id @default(autoincrement())
+  name        String
+  description String?
+
+  // Relation
+  project   Project @relation(fields: [projectId], references: [id])
+  projectId Int
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  USER
+}

@@ -1,63 +1,45 @@
+const { PrismaClient } = require('@prisma/client');
 const passport = require('passport');
-const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const LocalStrategy = require('passport-local').Strategy;
 const bcrypt = require('bcrypt');
-const User = require('../models/UserModel');
 
-// Serialize and deserialize user
+const prisma = new PrismaClient();
+
+// Serialize user by storing user ID in session
 passport.serializeUser((user, done) => {
     done(null, user.id);
 });
 
+// Deserialize user by fetching user from database by ID
 passport.deserializeUser(async (id, done) => {
     try {
-        const user = await User.findByPk(id);
+        const user = await prisma.user.findUnique({ where: { id } });
         done(null, user);
     } catch (error) {
         done(error, null);
     }
 });
 
-// Configure Google strategy
-passport.use(
-    new GoogleStrategy(
-        {
-            clientID: process.env.GOOGLE_CLIENT_ID,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-            callbackURL: '/auth/google/callback',
-        },
-        async (accessToken, refreshToken, profile, done) => {
-            try {
-                const { name, email } = profile._json;
-                let user = await User.findOne({ where: { email } });
-
-                if (!user) {
-                    user = await User.create({ name, email, password: null });
-                }
-
-                return done(null, user);
-            } catch (error) {
-                return done(error, null);
-            }
-        }
-    )
-);
-
-// Configure local strategy
+// Local strategy for authentication
 passport.use(
     new LocalStrategy(
-        { usernameField: 'email', passwordField: 'password' },
+        {
+            usernameField: 'email',
+            passwordField: 'password',
+        },
         async (email, password, done) => {
             try {
-                const user = await User.findOne({ where: { email } });
+                // Find user by email
+                const user = await prisma.user.findUnique({ where: { email } });
 
                 if (!user) {
-                    return done(null, false, { message: 'Invalid credentials' });
+                    return done(null, false, { message: 'Incorrect email.' });
                 }
 
+                // Check if password matches
                 const isMatch = await bcrypt.compare(password, user.password);
                 if (!isMatch) {
-                    return done(null, false, { message: 'Invalid credentials' });
+                    return done(null, false, { message: 'Incorrect password.' });
                 }
 
                 return done(null, user);
