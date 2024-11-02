@@ -1,4 +1,3 @@
-
 const { PrismaClient } = require('@prisma/client');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
@@ -7,22 +6,22 @@ const bcrypt = require('bcrypt');
 
 const prisma = new PrismaClient();
 
-// Serialize user by storing user ID in session
+// Serialize user by storing the email in the session
 passport.serializeUser((user, done) => {
-    done(null, user.id);
+    done(null, user.email); // Use email or another unique identifier
 });
 
-// Deserialize user by fetching user from database by ID
-passport.deserializeUser(async (id, done) => {
+// Deserialize user by fetching user data from Prisma by email
+passport.deserializeUser(async (email, done) => {
     try {
-        const user = await prisma.user.findUnique({ where: { id } });
+        const user = await prisma.user.findUnique({ where: { email } });
         done(null, user);
     } catch (error) {
         done(error, null);
     }
 });
 
-// Local strategy for authentication
+// Local strategy for email/password authentication
 passport.use(
     new LocalStrategy(
         {
@@ -31,64 +30,60 @@ passport.use(
         },
         async (email, password, done) => {
             try {
+                console.log(`Attempting to log in with email: ${email}`);
+
+                // Query Prisma to find the user by email
                 const user = await prisma.user.findUnique({ where: { email } });
 
                 if (!user) {
+                    console.log('User not found in Prisma');
                     return done(null, false, { message: 'Incorrect email.' });
                 }
 
+                // Compare password with the hashed password stored in Prisma
                 const isMatch = await bcrypt.compare(password, user.password);
                 if (!isMatch) {
+                    console.log('Password does not match');
                     return done(null, false, { message: 'Incorrect password.' });
                 }
 
                 return done(null, user);
             } catch (error) {
+                console.error('Error during authentication:', error);
                 return done(error);
             }
         }
     )
 );
 
-// Google strategy for authentication
+// Google strategy for OAuth authentication
 passport.use(
-   new GoogleStrategy(
-        {
+    new GoogleStrategy({
             clientID: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-            callbackURL: process.env.GOOGLE_CALLBACK_URL,
+            callbackURL: '/auth/google/callback',
         },
         async (accessToken, refreshToken, profile, done) => {
             try {
-                // Check if a user with this email already exists
-                const existingUser = await prisma.user.findUnique({
-                    where: { email: profile.emails[0].value }
-                });
+                // Check if the user exists in Prisma
+                let user = await prisma.user.findUnique({ where: { email: profile.emails[0].value } });
 
-                if (existingUser) {
-                    // If user exists but doesn't have Google ID, deny signup with Google
-                    if (!existingUser.googleId) {
-                        return done(null, false, { message: 'Email already associated with an account.' });
-                    }
-                    // If user exists with Google ID, proceed with login
-                    return done(null, existingUser);
+                // If the user doesn't exist, create a new user in Prisma
+                if (!user) {
+                    user = await prisma.user.create({
+                        data: {
+                            googleId: profile.id,
+                            name: profile.displayName,
+                            email: profile.emails[0].value,
+                        },
+                    });
                 }
 
-                // If no user exists, create a new user
-                const newUser = await prisma.user.create({
-                    data: {
-                        googleId: profile.id,
-                        name: profile.displayName,
-                        email: profile.emails[0].value
-                    }
-                });
-
-                done(null, newUser);
+                done(null, user);
             } catch (error) {
                 done(error);
             }
-        }
-    )
+        })
 );
 
 module.exports = passport;
