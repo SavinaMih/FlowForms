@@ -6,6 +6,7 @@ FormFlow is a streamlined web application designed for managing and processing f
 ## Project Purpose
 
 The goal of FormFlow is to simplify the process of collecting, organizing, and managing data from various forms in a centralized system. It can serve different use cases, including:
+
 - Feedback collection
 - Surveys and polls
 - Registration and contact forms
@@ -23,34 +24,39 @@ FormFlow allows users to create an account, manage multiple forms under their ac
 
 ## Planned Technologies and Frameworks
 
-- **Backend**:
-  - **Express.js**: Node.js framework for handling server-side logic and APIs.
-  - **HanaDB**: Database used to store user and form data.
-  - **MVC Architecture**: Separation of concerns to keep the application maintainable and scalable.
+### Backend
 
-- **Frontend**:
-  - **React.js**: A JavaScript library for building dynamic, user-friendly interfaces.
-  - **Axios**: For handling API requests and managing form data.
+- **Express.js**: Node.js framework for handling server-side logic and APIs.
+- **PostgreSQL**: Database used to store user and form data.
+- **MVC Architecture**: Separation of concerns to keep the application maintainable and scalable.
 
-- **Other Technologies**:
-  - **dotenv**: For securely managing environment variables.
-  - **CORS**: To restrict access to the application based on allowed origins.
+### Frontend
+
+- **React.js**: A JavaScript library for building dynamic, user-friendly interfaces.
+- **Axios**: For handling API requests and managing form data.
+
+### Other Technologies
+
+- **dotenv**: For securely managing environment variables.
+- **CORS**: To restrict access to the application based on allowed origins.
 
 ## Getting Started
 
 ### Prerequisites
 
-To run this project, ensure you have Node.js and npm installed. You’ll also need a running instance of HanaDB for data storage.
+To run this project, ensure you have Node.js and npm installed. You’ll also need a running instance of PostgreSQL for data storage.
 
 ### Installation
 
 1. Clone the repository:
+
    ```bash
    git clone <repository-url>
    cd FormFlow
    ```
 
 2. Install dependencies:
+
    ```bash
    npm install
    ```
@@ -58,6 +64,7 @@ To run this project, ensure you have Node.js and npm installed. You’ll also ne
 3. Set up environment variables by creating a `.env` file in the root directory, and include details as per the `.env.example`.
 
 4. Run the server:
+
    ```bash
    npm start
    ```
@@ -68,16 +75,17 @@ Once the server is running, navigate to the frontend app at `http://localhost:<P
 
 ## Planned API Endpoints
 
-| Method | Endpoint        | Description                                      |
-|--------|------------------|--------------------------------------------------|
-| GET    | `/api/forms`    | Retrieves all forms for the logged-in user       |
-| POST   | `/api/forms`    | Creates a new form                               |
-| GET    | `/api/forms/:id`| Retrieves data for a specific form               |
-| DELETE | `/api/forms/:id`| Deletes a specified form                         |
+| Method | Endpoint         | Description                            |
+|--------|-------------------|----------------------------------------|
+| GET    | /api/forms       | Retrieves all forms for the logged-in user |
+| POST   | /api/forms       | Creates a new form                     |
+| GET    | /api/forms/:id   | Retrieves data for a specific form     |
+| DELETE | /api/forms/:id   | Deletes a specified form               |
 
 ## Future Development
 
 Future improvements may include:
+
 - **Form Customization**: Allowing users to customize form layouts and styles.
 - **Analytics Dashboard**: Providing basic analytics for form submissions.
 - **Email Notifications**: Sending automated emails on form submissions.

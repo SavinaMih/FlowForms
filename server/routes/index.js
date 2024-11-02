@@ -2,14 +2,18 @@ const authRoutes = require('./authRoutes');
 const userRoutes = require('./userRouters');
 const dbRoutes = require('./dbRoutes');
 const { swaggerUi, specs } = require('../swagger'); // Import Swagger configuration
+const ensureAuthenticated = require('../middlewear/auth');
 
 module.exports = (app) => {
     // Swagger documentation route
     app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
-    // Health check route (optional)
-    app.get('/status', (req, res) => {
-        res.json({ status: 'Database connected successfully.' });
+    app.use((req, res, next) => {
+        const publicRoutes = ['/auth/login', '/auth/signup', '/auth/google', '/auth/google/callback'];
+        if (publicRoutes.includes(req.path)) {
+            return next();
+        }
+        ensureAuthenticated(req, res, next);
     });
 
     // Authentication routes

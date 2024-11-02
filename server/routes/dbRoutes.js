@@ -1,7 +1,8 @@
 const express = require('express');
-const sequelize = require('../config/db'); // Import the Sequelize instance
+const { PrismaClient } = require('@prisma/client'); // Import PrismaClient
 
 const router = express.Router();
+const prisma = new PrismaClient();
 
 /**
  * @swagger
@@ -39,13 +40,14 @@ const router = express.Router();
 router.get('/status', async (req, res) => {
     try {
         // Test the database connection
-        await sequelize.authenticate();
+        await prisma.$connect();
 
         res.status(200).json({ status: "Database connected successfully." });
     } catch (error) {
         res.status(500).json({ status: "Database connection failed.", error: error.toString() });
+    } finally {
+        await prisma.$disconnect();
     }
 });
 
 module.exports = router;
-
