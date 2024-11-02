@@ -1,11 +1,13 @@
 require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
-const passport = require('./config/passport');
+const passport = require('./config/passport'); // Ensure path is correct
 const cors = require('cors');
 const { swaggerUi, specs } = require('./swagger');
 const loadRoutes = require('./routes/index');
 const path = require('path');
+const flash = require('connect-flash');
+
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -23,7 +25,7 @@ const corsOptions = {
 app.use((req, res, next) => {
     const now = new Date();
     console.log(`${now.toISOString()} - ${req.method} request for '${req.url}'`);
-    next(); // Pass control to the next middleware/route handler
+    next();
 });
 
 // Middleware
@@ -31,24 +33,34 @@ app.use(cors(corsOptions));
 app.use(express.json()); // Body parser for JSON
 app.use(express.urlencoded({ extended: true })); // Body parser for URL-encoded data
 
-// Session configuration
+// Session middleware configuration
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'secretKey',
+    secret: process.env.SESSION,
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
+    cookie: { secure: false } // Use true for HTTPS
 }));
 
-// Passport middleware
+// Flash messages
+app.use(flash());
+app.use((req, res, next) => {
+    res.locals.success_msg = req.flash('success_msg');
+    res.locals.error_msg = req.flash('error_msg');
+    res.locals.error = req.flash('error');
+    res.locals.user = req.user || null;
+    next();
+});
+
+// Passport middleware (make sure this is after session middleware)
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Import and use centralized routes
-loadRoutes(app); // Load main routes
+// Import and use centralized routes after initializing Passport
+loadRoutes(app);
 
-// Test database connection on startup
+// Start server
 async function startServer() {
     try {
-        // Start the server if DB connection is successful
         app.listen(port, () => {
             console.log(`Server is running on http://localhost:${port}`);
             console.log(`Swagger Docs are available at http://localhost:${port}/api-docs`);
@@ -58,4 +70,4 @@ async function startServer() {
     }
 }
 
-startServer(); // Call the function to start the server
+startServer();
