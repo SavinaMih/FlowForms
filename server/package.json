@@ -34,7 +34,8 @@
     "prisma": "^5.21.1",
     "sap-hdbext-promisfied": "^2.202410.1",
     "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.1"
+    "swagger-ui-express": "^5.0.1",
+    "uuid": "^11.0.2"
   },
   "devDependencies": {
     "nodemon": "^3.1.7"

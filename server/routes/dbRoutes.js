@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 
 /**
  * @swagger
- * /status:
+ * /db/status:
  *   get:
  *     summary: Check the database connection status
  *     tags:

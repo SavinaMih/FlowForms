@@ -34,3 +34,6 @@ dist-ssr
 .env.test.local
 .env.production.local
 .env
+
+# ignore node_modules
+node_modules

@@ -1,6 +1,7 @@
 const authRoutes = require('./authRoutes');
 const userRoutes = require('./userRouters');
 const dbRoutes = require('./dbRoutes');
+const formRoutes = require('./formRoutes');
 const { swaggerUi, specs } = require('../swagger'); // Import Swagger configuration
 
 const { ensureAuthenticated } = require('../middlewear/authMiddlewear');
@@ -16,6 +17,8 @@ module.exports = (app) => {
         }
         ensureAuthenticated(req, res, next);
     });
+    //form routes
+    app.use('/forms',formRoutes);
 
     // Authentication routes
     app.use('/auth', authRoutes);

@@ -23,8 +23,29 @@ model User {
   managedProjects     Project[]      @relation("ProjectManager") // User as project manager
   Organization        Organization[]
   managedOrganization Organization?  @relation("OrganizationManager")
+  forms               Form[] // Forms created by the user
 
   @@index([googleId])
+}
+
+model Form {
+  id          Int              @id @default(autoincrement())
+  formId      String           @unique // Unique identifier for each form
+  name        String
+  description String?
+  userId      Int // ID of the user who created the form
+  user        User             @relation(fields: [userId], references: [id])
+  project     Project          @relation(fields: [projectId], references: [id])
+  projectId   Int
+  submissions FormSubmission[] // Submissions for this form
+}
+
+model FormSubmission {
+  id        Int      @id @default(autoincrement())
+  formId    Int // References the form
+  form      Form     @relation(fields: [formId], references: [id])
+  data      Json // The submitted form data
+  createdAt DateTime @default(now())
 }
 
 model Organization {
@@ -47,15 +68,7 @@ model Project {
   manager        User?        @relation("ProjectManager", fields: [managerId], references: [id]) // Project manager
   managerId      Int?
   users          User[]       @relation("ProjectUsers") // Project team members
-  forms          Form[]
-}
-
-model Form {
-  id          Int     @id @default(autoincrement())
-  name        String
-  description String?
-  project     Project @relation(fields: [projectId], references: [id])
-  projectId   Int
+  forms          Form[] // Forms associated with this project
 }
 
 enum Role {
