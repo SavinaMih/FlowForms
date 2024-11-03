@@ -1,5 +1,5 @@
 
-# FormFlow
+# FlowForm
 
 FormFlow is a streamlined web application designed for managing and processing forms, ideal for businesses and organizations that need efficient and secure handling of various forms submitted by users. The application provides account creation and user login, multiple forms per user, unique URLs for each form, and a user-friendly interface to view and manage form submissions.
 
