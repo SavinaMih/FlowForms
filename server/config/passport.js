@@ -6,20 +6,21 @@ const bcrypt = require('bcrypt');
 
 const prisma = new PrismaClient();
 
-// Serialize user by storing the email in the session
+// Serialize user by storing the user ID in the session
 passport.serializeUser((user, done) => {
-    done(null, user.email); // Use email or another unique identifier
+    done(null, user.id); // Store user ID instead of email
 });
 
-// Deserialize user by fetching user data from Prisma by email
-passport.deserializeUser(async (email, done) => {
+// Deserialize user by fetching user data from Prisma by ID
+passport.deserializeUser(async (id, done) => {
     try {
-        const user = await prisma.user.findUnique({ where: { email } });
-        done(null, user);
+        const user = await prisma.user.findUnique({ where: { id } });
+        done(null, user); // Retrieve the full user object by ID
     } catch (error) {
         done(error, null);
     }
 });
+
 
 // Local strategy for email/password authentication
 passport.use(

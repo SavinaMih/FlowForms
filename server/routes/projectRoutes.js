@@ -1,20 +1,20 @@
 const express = require('express');
 const router = express.Router();
-const formController = require('../controllers/formController');
+const projectController = require('../controllers/projectController');
 
 /**
  * @swagger
  * tags:
- *   - name: Forms
- *     description: API for managing forms
+ *   name: Projects
+ *   description: API for managing projects
  */
 
 /**
  * @swagger
- * /forms:
+ * /projects:
  *   post:
- *     summary: Create a new form
- *     tags: [Forms]
+ *     summary: Create a new project
+ *     tags: [Projects]
  *     requestBody:
  *       required: true
  *       content:
@@ -22,37 +22,35 @@ const formController = require('../controllers/formController');
  *           schema:
  *             type: object
  *             properties:
- *               title:
+ *               name:
  *                 type: string
- *                 description: The title of the form
- *               description:
- *                 type: string
- *                 description: The description of the form
- *               projectId:
- *                 type: integer
- *                 description: The ID of the associated project
+ *                 description: The name of the project
  *               userId:
  *                 type: integer
- *                 description: The ID of the user who created the form
+ *                 description: The ID of the user associated with the project
+ *               formTitle:
+ *                 type: string
+ *                 description: Title of the form associated with the project
+ *               formDescription:
+ *                 type: string
+ *                 description: Description of the form associated with the project
  *     responses:
  *       201:
- *         description: Form created successfully
- *       400:
- *         description: This project already has a form associated with it
+ *         description: Project created successfully
  *       500:
  *         description: Server error
  */
-router.post('/', formController.createForm);
+router.post('/', projectController.createProject);
 
 /**
  * @swagger
- * /forms:
+ * /projects:
  *   get:
- *     summary: Get all forms
- *     tags: [Forms]
+ *     summary: Get all projects
+ *     tags: [Projects]
  *     responses:
  *       200:
- *         description: List of all forms
+ *         description: List of all projects
  *         content:
  *           application/json:
  *             schema:
@@ -62,46 +60,38 @@ router.post('/', formController.createForm);
  *                 properties:
  *                   id:
  *                     type: integer
- *                   title:
+ *                   name:
  *                     type: string
- *                   description:
- *                     type: string
- *                   project:
+ *                   form:
  *                     type: object
  *                     properties:
  *                       id:
  *                         type: integer
- *                       name:
+ *                       title:
  *                         type: string
- *                   user:
- *                     type: object
- *                     properties:
- *                       id:
- *                         type: integer
- *                       name:
+ *                       description:
  *                         type: string
  *       500:
  *         description: Server error
  */
-router.get('/', formController.getAllForms);
-
+router.get('/', projectController.getAllProjects);
 
 /**
  * @swagger
- * /forms/{id}:
+ * /projects/{id}:
  *   get:
- *     summary: Get a form by ID
- *     tags: [Forms]
+ *     summary: Get a project by ID
+ *     tags: [Projects]
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: integer
- *         description: The ID of the form
+ *         description: The ID of the project
  *     responses:
  *       200:
- *         description: Form data
+ *         description: Project data
  *         content:
  *           application/json:
  *             schema:
@@ -109,43 +99,37 @@ router.get('/', formController.getAllForms);
  *               properties:
  *                 id:
  *                   type: integer
- *                 title:
+ *                 name:
  *                   type: string
- *                 description:
- *                   type: string
- *                 project:
+ *                 form:
  *                   type: object
  *                   properties:
  *                     id:
  *                       type: integer
- *                     name:
+ *                     title:
  *                       type: string
- *                 user:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: integer
- *                     name:
+ *                     description:
  *                       type: string
  *       404:
- *         description: Form not found
+ *         description: Project not found
  *       500:
  *         description: Server error
  */
-router.get('/:id', formController.getFormById);
+router.get('/:id', projectController.getProjectById);
 
 /**
  * @swagger
- * /forms/{id}:
+ * /projects/{id}:
  *   put:
- *     summary: Update a form by ID
- *     tags: [Forms]
+ *     summary: Update a project by ID
+ *     tags: [Projects]
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
- *         description: The ID of the form to update
+ *           type: integer
+ *         description: The ID of the project to update
  *     requestBody:
  *       required: true
  *       content:
@@ -153,43 +137,46 @@ router.get('/:id', formController.getFormById);
  *           schema:
  *             type: object
  *             properties:
- *               title:
+ *               name:
+ *                 type: string
+ *                 description: The updated name of the project
+ *               formTitle:
  *                 type: string
  *                 description: The updated title of the form
- *               description:
+ *               formDescription:
  *                 type: string
  *                 description: The updated description of the form
  *     responses:
  *       200:
- *         description: Form updated successfully
+ *         description: Project updated successfully
  *       404:
- *         description: Form not found
+ *         description: Project not found
  *       500:
  *         description: Server error
  */
-router.put('/:id', formController.updateForm);
+router.put('/:id', projectController.updateProject);
 
 /**
  * @swagger
- * /forms/{id}:
+ * /projects/{id}:
  *   delete:
- *     summary: Delete a form by ID
- *     tags: [Forms]
+ *     summary: Delete a project by ID
+ *     tags: [Projects]
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: integer
- *         description: The ID of the form to delete
+ *         description: The ID of the project to delete
  *     responses:
  *       200:
- *         description: Form deleted successfully
+ *         description: Project deleted successfully
  *       404:
- *         description: Form not found
+ *         description: Project not found
  *       500:
  *         description: Server error
  */
-router.delete('/:id', formController.deleteForm);
+router.delete('/:id', projectController.deleteProject);
 
 module.exports = router;

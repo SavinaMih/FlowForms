@@ -3,6 +3,7 @@ const userRoutes = require('./userRouters');
 const dbRoutes = require('./dbRoutes');
 const formRoutes = require('./formRoutes');
 const { swaggerUi, specs } = require('../swagger'); // Import Swagger configuration
+const projectRoutes = require('./projectRoutes');
 
 const { ensureAuthenticated } = require('../middlewear/authMiddlewear');
 
@@ -28,6 +29,9 @@ module.exports = (app) => {
 
     // Database-related routes
     app.use('/db', dbRoutes);
+
+    // Project routes
+    app.use('/projects', projectRoutes);
 
     // Sample API endpoint
     app.get('/api', (req, res) => {

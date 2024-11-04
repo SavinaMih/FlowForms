@@ -7,6 +7,7 @@ const { swaggerUi, specs } = require('./swagger');
 const loadRoutes = require('./routes/index');
 const path = require('path');
 const flash = require('connect-flash');
+const PgSession = require('connect-pg-simple')(session);
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -32,6 +33,20 @@ app.use((req, res, next) => {
 app.use(cors(corsOptions));
 app.use(express.json()); // Body parser for JSON
 app.use(express.urlencoded({ extended: true })); // Body parser for URL-encoded data
+app.use(
+    session({
+        store: new PgSession({
+            conString: process.env.DATABASE_URL, // Connection string for PostgreSQL
+        }),
+        secret: process.env.SESSION_SECRET || 'your-secret-key', // Use a strong, unique secret in production
+        resave: false,
+        saveUninitialized: false,
+        cookie: {
+            maxAge: 7 * 24 * 60 * 60 * 1000, // Optional: 1-week expiration for sessions
+            secure: process.env.NODE_ENV === 'production', // Set to true if using HTTPS in production
+        },
+    })
+);
 
 // Session middleware configuration
 app.use(session({

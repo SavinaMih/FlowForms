@@ -1,81 +1,171 @@
-const prisma = require('@prisma/client');
-const { PrismaClient } = prisma;
-const { v4: uuidv4 } = require('uuid'); // Generate unique form IDs
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 
-const createForm = async (req, res) => {
+// Create a new Form
+exports.createForm = async (req, res) => {
     try {
-        const { userId, title } = req.body;
+        const { title, description, projectId } = req.body;
+        const userId = req.userId; // Assuming userId is set by the authentication middleware
 
-        // Check if the user exists (optional validation)
-        const user = await prisma.user.findUnique({
-            where: { id: userId },
+        // Check if the project exists and if the user has access to it
+        const project = await prisma.project.findUnique({
+            where: { id: projectId },
+            include: { users: true }, // Fetch associated users to verify ownership
         });
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+
+        if (!project) {
+            return res.status(404).json({ error: 'Project not found' });
         }
 
-        // Create the form
-        const newForm = await prisma.form.create({
-            data: {
-                formId: uuidv4(), // Unique identifier for the form
-                title: title,
-                userId: userId, // Link form to the user
+        // Check if the current user is associated with the project
+        const isUserAuthorized = project.users.some(user => user.id === userId);
+        if (!isUserAuthorized) {
+            return res.status(403).json({ error: 'User not authorized to create a form for this project' });
+        }
+
+        // Check if the project already has an associated form
+        const existingForm = await prisma.form.findFirst({
+            where: {
+                project: {
+                    id: projectId,
+                },
             },
         });
 
-        res.status(201).json({ message: 'Form created successfully', form: newForm });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'An error occurred' });
-    }
-};
+        if (existingForm) {
+            return res.status(400).json({ error: 'This project already has a form associated with it.' });
+        }
 
-const createSubmission = async (req, res) => {
-    try {
-        const { formId } = req.params;
-        const formData = req.body;
-
-        // Save the submission to the database
-        const submission = await prisma.formSubmission.create({
+        // Create the form and associate it with the project and user
+        const form = await prisma.form.create({
             data: {
-                formId: formId,
-                data: formData,
+                title,
+                description,
+                project: {
+                    connect: { id: projectId },
+                },
+                user: { connect: { id: userId } },
             },
         });
 
-        res.status(201).json({ message: 'Form submitted successfully', submission });
+        res.status(201).json(form);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'An error occurred' });
+        res.status(500).json({ error: error.message });
     }
 };
 
-const getSubmissions = async (req, res) => {
+// Get all Forms for the current user
+exports.getAllForms = async (req, res) => {
     try {
-        const { formId } = req.params;
+        const userId = req.userId; // Assuming userId is set by the authentication middleware
 
-        const submissions = await prisma.formSubmission.findMany({
-            where: { formId: formId },
+        const forms = await prisma.form.findMany({
+            where: {
+                userId: userId,
+            },
+            include: {
+                project: true,
+            },
         });
 
-        res.json(submissions);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'An error occurred' });
-    }
-};
-
-
-const getAll = async (req, res) => {
-    try {
-        const forms = await prisma.form.findMany();
         res.json(forms);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'An error occurred' });
+        res.status(500).json({ error: error.message });
     }
 };
 
+// Get a Form by ID for the current user
+exports.getFormById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.userId;
 
+        const form = await prisma.form.findUnique({
+            where: { id: parseInt(id) },
+            include: {
+                project: true,
+                user: true,
+            },
+        });
 
-module.exports = { createSubmission, getSubmissions, createForm, getAll };
+        if (!form) {
+            return res.status(404).json({ error: 'Form not found' });
+        }
+
+        // Check if the form belongs to the current user
+        if (form.userId !== userId) {
+            return res.status(403).json({ error: 'User not authorized to access this form' });
+        }
+
+        res.json(form);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Update a Form if it belongs to the current user
+exports.updateForm = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { title, description } = req.body;
+        const userId = req.userId;
+
+        // Fetch the form to check ownership
+        const form = await prisma.form.findUnique({
+            where: { id: parseInt(id) },
+        });
+
+        if (!form) {
+            return res.status(404).json({ error: 'Form not found' });
+        }
+
+        // Check if the form belongs to the current user
+        if (form.userId !== userId) {
+            return res.status(403).json({ error: 'User not authorized to update this form' });
+        }
+
+        // Update the form
+        const updatedForm = await prisma.form.update({
+            where: { id: parseInt(id) },
+            data: {
+                title,
+                description,
+            },
+        });
+
+        res.json(updatedForm);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Delete a Form if it belongs to the current user
+exports.deleteForm = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.userId;
+
+        // Fetch the form to check ownership
+        const form = await prisma.form.findUnique({
+            where: { id: parseInt(id) },
+        });
+
+        if (!form) {
+            return res.status(404).json({ error: 'Form not found' });
+        }
+
+        // Check if the form belongs to the current user
+        if (form.userId !== userId) {
+            return res.status(403).json({ error: 'User not authorized to delete this form' });
+        }
+
+        // Delete the form
+        await prisma.form.delete({
+            where: { id: parseInt(id) },
+        });
+
+        res.json({ message: 'Form deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
