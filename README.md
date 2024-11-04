@@ -12,7 +12,7 @@ The goal of FormFlow is to simplify the process of collecting, organizing, and m
 - Registration and contact forms
 - Custom forms for any organization-specific needs
 
-FormFlow allows users to create an account, manage multiple forms under their account, and generate unique links for each form, making it ideal for businesses or individuals looking for a versatile form management system.
+FormFlow gives users the opportunity to create an account, manage multiple forms under their account, and generate unique links for each form, making it ideal for businesses or individuals looking for a versatile form management system.
 
 ## Key Features
 
