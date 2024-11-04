@@ -1,100 +1,141 @@
 
 # FlowForm
 
-FormFlow is a streamlined web application designed for managing and processing forms, ideal for businesses and organizations that need efficient and secure handling of various forms submitted by users. The application provides account creation and user login, multiple forms per user, unique URLs for each form, and a user-friendly interface to view and manage form submissions.
+FlowForm is a simple, self-hosted form processing backend built to collect, manage, and securely store form submissions from your website. Easily integrate FlowForm with your site to capture user information, validate submissions, and organize data in one central place.
 
-## Project Purpose
+## Features
 
-The goal of FormFlow is to simplify the process of collecting, organizing, and managing data from various forms in a centralized system. It can serve different use cases, including:
+- **Easy Integration**: Seamlessly connect forms from your website to FlowForm with minimal setup.
+- **Data Persistence**: Store form submissions securely in PostgreSQL using Prisma ORM.
+- **User Authentication**: Supports Google OAuth2 and local login for managing access.
+- **Session Management**: Persistent sessions using PostgreSQL, ensuring security and convenience.
+- **RESTful API**: Access and manage forms, projects, and users through a structured API.
+- **Swagger API Documentation**: Full API documentation for easy reference and testing.
 
-- Feedback collection
-- Surveys and polls
-- Registration and contact forms
-- Custom forms for any organization-specific needs
-
-FormFlow gives users the opportunity to create an account, manage multiple forms under their account, and generate unique links for each form, making it ideal for businesses or individuals looking for a versatile form management system.
-
-## Key Features
-
-- **User Account System**: Secure login and account creation for users to manage their forms.
-- **Multiple Form Creation**: Users can create, customize, and manage multiple forms under a single account.
-- **Unique Form URLs**: Each form generates a unique URL, which can be shared for easy access.
-- **Data Display**: Form submissions are displayed in an organized table format for easy data analysis.
-- **Secure Backend**: Built with security and data protection in mind, utilizing environment-based configurations and CORS for controlled access.
-
-## Planned Technologies and Frameworks
-
-### Backend
-
-- **Express.js**: Node.js framework for handling server-side logic and APIs.
-- **PostgreSQL**: Database used to store user and form data.
-- **MVC Architecture**: Separation of concerns to keep the application maintainable and scalable.
-
-### Frontend
-
-- **React.js**: A JavaScript library for building dynamic, user-friendly interfaces.
-- **Axios**: For handling API requests and managing form data.
-
-### Other Technologies
-
-- **dotenv**: For securely managing environment variables.
-- **CORS**: To restrict access to the application based on allowed origins.
+---
 
 ## Getting Started
 
 ### Prerequisites
 
-To run this project, ensure you have Node.js and npm installed. You’ll also need a running instance of PostgreSQL for data storage.
+- **Node.js** and **npm**
+- **PostgreSQL** for data storage
+- Environment variables configured in a `.env` file:
+  - `DATABASE_URL`: Connection string for PostgreSQL
+  - `SESSION_SECRET`: Secret key for session management
+  - `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`: For Google OAuth
 
 ### Installation
 
-1. Clone the repository:
+#### Server
 
+1. Clone the repository and navigate to the server folder:
    ```bash
-   git clone <repository-url>
-   cd FormFlow
+   git clone https://github.com/yourusername/FlowForm.git
+   cd FlowForm/server
    ```
 
 2. Install dependencies:
-
    ```bash
    npm install
    ```
 
-3. Set up environment variables by creating a `.env` file in the root directory, and include details as per the `.env.example`.
+3. Set up the database using Prisma:
+   ```bash
+   npx prisma migrate dev --name init
+   ```
 
-4. Run the server:
-
+4. Start the server:
    ```bash
    npm start
    ```
 
-### Usage
+Your server should now be running on `http://localhost:3000`.
 
-Once the server is running, navigate to the frontend app at `http://localhost:<PORT>` to begin creating and managing forms.
+#### Client
 
-## Planned API Endpoints
+1. Navigate to the client folder:
+   ```bash
+   cd ../client
+   ```
 
-| Method | Endpoint         | Description                            |
-|--------|-------------------|----------------------------------------|
-| GET    | /api/forms       | Retrieves all forms for the logged-in user |
-| POST   | /api/forms       | Creates a new form                     |
-| GET    | /api/forms/:id   | Retrieves data for a specific form     |
-| DELETE | /api/forms/:id   | Deletes a specified form               |
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-## Future Development
+3. Start the client:
+   ```bash
+   npm start
+   ```
 
-Future improvements may include:
+Your client should now be running on `http://localhost:3001`.
 
-- **Form Customization**: Allowing users to customize form layouts and styles.
-- **Analytics Dashboard**: Providing basic analytics for form submissions.
-- **Email Notifications**: Sending automated emails on form submissions.
-- **Payment Integration**: Allowing users to charge for form submissions.
+---
+
+## Usage
+
+### Authentication
+
+FlowForm supports both Google OAuth and local login for user authentication.
+
+- **Google OAuth**: Authenticate users with their Google accounts.
+- **Local Login**: Register and log in users with an email and password.
+
+### API Endpoints
+
+#### Authentication
+
+- **POST /auth/login**: Log in with email and password.
+- **POST /auth/signup**: Register a new user.
+- **GET /auth/google**: Redirect to Google for authentication.
+- **GET /auth/google/callback**: Google OAuth callback.
+- **GET /auth/logout**: Log out the current user.
+
+#### Forms
+
+- **POST /forms**: Create a new form associated with a project.
+- **GET /forms**: Retrieve all forms.
+- **GET /forms/{id}**: Retrieve a specific form by ID.
+- **PUT /forms/{id}**: Update a form by ID.
+- **DELETE /forms/{id}**: Delete a form by ID.
+
+#### Projects
+
+- **POST /projects**: Create a new project.
+- **GET /projects**: Retrieve all projects.
+- **GET /projects/{id}**: Retrieve a specific project by ID.
+- **PUT /projects/{id}**: Update a project by ID.
+- **DELETE /projects/{id}**: Delete a project by ID.
+
+### Data Security
+
+FlowForm uses session-based authentication and stores data securely in PostgreSQL, ensuring that user data is only accessible to authorized users. Sessions are maintained securely using HTTP-only cookies and encrypted secrets.
+
+### API Documentation
+
+To access the Swagger API documentation, start your server and go to:
+```
+http://localhost:3000/api-docs
+```
+
+---
+
+## Example Workflow
+
+1. **Register or Login**: Register a new user or log in using Google or local credentials.
+2. **Create a Project**: Start by creating a project to organize forms.
+3. **Add Forms**: Create forms associated with projects to collect submissions.
+4. **Retrieve and Manage Data**: Use the API to retrieve, update, or delete projects and forms as needed.
+
+---
 
 ## Contributing
 
-Contributions are welcome! If you'd like to contribute, please open an issue or submit a pull request.
+We welcome contributions! Feel free to submit issues, fork the repository, and make pull requests.
 
 ## License
 
 This project is licensed under the MIT License.
+
+---
